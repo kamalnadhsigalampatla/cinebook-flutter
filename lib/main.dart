@@ -1,707 +1,430 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const CineBookApp());
+void main() => runApp(const MovieExplorerApp());
 
-// Single-file Movie Ticket Booking UI. Uses only Flutter SDK widgets.
-
-class CineBookApp extends StatefulWidget {
-  const CineBookApp({super.key});
+class MovieExplorerApp extends StatefulWidget {
+  const MovieExplorerApp({super.key});
   @override
-  State<CineBookApp> createState() => _CineBookAppState();
+  State<MovieExplorerApp> createState() => _MovieExplorerAppState();
 }
 
-class _CineBookAppState extends State<CineBookApp> {
-  bool dark = false;
+class _MovieExplorerAppState extends State<MovieExplorerApp> {
+  ThemeMode mode = ThemeMode.dark;
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'CineBook',
         debugShowCheckedModeBanner: false,
-        themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+        title: 'MovieExplorer',
+        themeMode: mode,
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7054D8)),
-          scaffoldBackgroundColor: const Color(0xFFF6F5FA),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE50914)),
         ),
         darkTheme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF9C87F5),
+            seedColor: const Color(0xFFE50914),
             brightness: Brightness.dark,
           ),
+          scaffoldBackgroundColor: const Color(0xFF101014),
         ),
-        home: CineBookHome(
-          dark: dark,
-          onTheme: () => setState(() => dark = !dark),
+        home: ExplorerHome(
+          isDark: mode == ThemeMode.dark,
+          onTheme: () => setState(() =>
+              mode = mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark),
         ),
       );
 }
 
 class Movie {
-  final String title, genre, duration, rating, language, description;
-  final Color color;
+  final int id;
+  final String title, genre, language, synopsis, age;
+  final int year, minutes;
+  final double rating;
   final IconData icon;
-  const Movie(this.title, this.genre, this.duration, this.rating,
-      this.language, this.description, this.color, this.icon);
+  final List<Color> colors;
+  const Movie({
+    required this.id,
+    required this.title,
+    required this.genre,
+    required this.language,
+    required this.synopsis,
+    required this.age,
+    required this.year,
+    required this.minutes,
+    required this.rating,
+    required this.icon,
+    required this.colors,
+  });
 }
 
-const movieList = <Movie>[
-  Movie('The Last Galaxy', 'Sci-Fi • Adventure', '2h 18m', '8.7', 'English',
-      'A team of explorers travels beyond the known galaxy to discover a mysterious world.',
-      Color(0xFF273B80), Icons.rocket_launch),
-  Movie('City of Dreams', 'Drama • Romance', '2h 05m', '8.2', 'Telugu',
-      'Two strangers follow their dreams in a busy city and discover an unexpected friendship.',
-      Color(0xFF9A4269), Icons.location_city),
-  Movie('Shadow Mission', 'Action • Thriller', '2h 12m', '9.0', 'Hindi',
-      'An undercover agent races against time to stop a dangerous plan.',
-      Color(0xFF3D4C45), Icons.security),
-  Movie('Laugh Out Loud', 'Comedy • Family', '1h 48m', '7.9', 'Tamil',
-      'A hilarious family adventure full of surprises and unforgettable moments.',
-      Color(0xFFB46A25), Icons.sentiment_very_satisfied),
-  Movie('Ocean Mystery', 'Mystery • Adventure', '2h 01m', '8.4', 'English',
-      'A marine researcher investigates strange signals from the deepest ocean.',
-      Color(0xFF176B78), Icons.waves),
-  Movie('The Final Match', 'Sports • Drama', '2h 10m', '8.6', 'Telugu',
-      'A young player gets one final chance to lead his team to victory.',
-      Color(0xFF8B3E36), Icons.sports_cricket),
+const movieData = <Movie>[
+  Movie(id: 1, title: 'The Last Horizon', genre: 'Sci-Fi', language: 'English',
+    synopsis: 'A deep-space crew follows a mysterious signal beyond the edge of a known galaxy and discovers a secret that could change humanity.',
+    age: 'U/A 13+', year: 2025, minutes: 142, rating: 8.7, icon: Icons.rocket_launch,
+    colors: [Color(0xFF101B46), Color(0xFF3878A8)]),
+  Movie(id: 2, title: 'Midnight Chase', genre: 'Action', language: 'English',
+    synopsis: 'A former getaway driver has one night to protect a witness while a dangerous crew closes in across the city.',
+    age: 'U/A 16+', year: 2024, minutes: 128, rating: 8.2, icon: Icons.directions_car,
+    colors: [Color(0xFF4A1118), Color(0xFFDE5A32)]),
+  Movie(id: 3, title: 'Monsoon Letters', genre: 'Romance', language: 'Telugu',
+    synopsis: 'Two strangers begin exchanging letters during a rainy season and slowly uncover a connection from their past.',
+    age: 'U', year: 2025, minutes: 116, rating: 7.9, icon: Icons.mail,
+    colors: [Color(0xFF24544D), Color(0xFF8EBB91)]),
+  Movie(id: 4, title: 'The Hidden Code', genre: 'Thriller', language: 'Hindi',
+    synopsis: 'A young analyst finds a pattern in encrypted files and becomes the target of a secret organisation.',
+    age: 'U/A 13+', year: 2023, minutes: 134, rating: 8.5, icon: Icons.memory,
+    colors: [Color(0xFF25213E), Color(0xFF7661A8)]),
+  Movie(id: 5, title: 'Laughing Matters', genre: 'Comedy', language: 'Hindi',
+    synopsis: 'A family holiday goes hilariously wrong when every member arrives with a different surprise plan.',
+    age: 'U/A 7+', year: 2024, minutes: 108, rating: 7.6, icon: Icons.theater_comedy,
+    colors: [Color(0xFF8A4C13), Color(0xFFE6B34D)]),
+  Movie(id: 6, title: 'Wild Kingdom', genre: 'Adventure', language: 'English',
+    synopsis: 'A group of explorers journeys into an uncharted rainforest in search of a legendary lost valley.',
+    age: 'U/A 7+', year: 2022, minutes: 126, rating: 8.1, icon: Icons.landscape,
+    colors: [Color(0xFF174C36), Color(0xFF7EBB67)]),
+  Movie(id: 7, title: 'Echoes of War', genre: 'Drama', language: 'Tamil',
+    synopsis: 'Years after a conflict, a family reunites to understand the choices that shaped their lives.',
+    age: 'U/A 16+', year: 2023, minutes: 151, rating: 8.4, icon: Icons.shield,
+    colors: [Color(0xFF3E3530), Color(0xFFAA8060)]),
+  Movie(id: 8, title: 'Deep Blue', genre: 'Sci-Fi', language: 'English',
+    synopsis: 'Scientists investigating an ocean trench encounter an intelligent form of life beneath the waves.',
+    age: 'U/A 13+', year: 2024, minutes: 119, rating: 7.8, icon: Icons.water,
+    colors: [Color(0xFF063B56), Color(0xFF21A3B5)]),
 ];
 
-class TicketBooking {
-  final Movie movie;
-  final String time, name, phone;
-  final List<String> seats;
-  const TicketBooking(this.movie, this.time, this.name, this.phone, this.seats);
-  int get total => seats.length * 180;
-}
+const genres = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Romance', 'Sci-Fi', 'Thriller'];
 
-class CineBookHome extends StatefulWidget {
-  final bool dark;
+class ExplorerHome extends StatefulWidget {
+  final bool isDark;
   final VoidCallback onTheme;
-  const CineBookHome({super.key, required this.dark, required this.onTheme});
+  const ExplorerHome({super.key, required this.isDark, required this.onTheme});
   @override
-  State<CineBookHome> createState() => _CineBookHomeState();
+  State<ExplorerHome> createState() => _ExplorerHomeState();
 }
 
-class _CineBookHomeState extends State<CineBookHome> {
-  int page = 0;
-  final bookings = <TicketBooking>[];
+class _ExplorerHomeState extends State<ExplorerHome> {
+  int tab = 0;
+  String query = '', genre = 'All', sort = 'Recommended';
+  final Set<int> watchlist = {};
 
-  void confirm(TicketBooking booking) {
-    setState(() {
-      bookings.insert(0, booking);
-      page = 1;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Movie tickets booked successfully!')),
-    );
+  List<Movie> get filtered {
+    final list = movieData.where((m) {
+      final q = query.toLowerCase();
+      final textMatch = m.title.toLowerCase().contains(q) ||
+          m.genre.toLowerCase().contains(q) ||
+          m.language.toLowerCase().contains(q);
+      return textMatch && (genre == 'All' || m.genre == genre);
+    }).toList();
+    if (sort == 'Top Rated') list.sort((a, b) => b.rating.compareTo(a.rating));
+    if (sort == 'Newest') list.sort((a, b) => b.year.compareTo(a.year));
+    if (sort == 'A–Z') list.sort((a, b) => a.title.compareTo(b.title));
+    return list;
+  }
+
+  void toggleSave(Movie m) => setState(() {
+        watchlist.contains(m.id) ? watchlist.remove(m.id) : watchlist.add(m.id);
+      });
+
+  void openMovie(Movie m) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => MovieDetailsPage(
+        movie: m,
+        saved: watchlist.contains(m.id),
+        onSave: () => toggleSave(m),
+      ),
+    )).then((_) => setState(() {}));
   }
 
   @override
   Widget build(BuildContext context) {
-    final desktop = MediaQuery.of(context).size.width >= 850;
-    final screens = [
-      MoviesScreen(onSelect: openMovie),
-      BookingsScreen(bookings: bookings),
-      ProfileScreen(dark: widget.dark, onTheme: widget.onTheme,
-          count: bookings.length),
-    ];
-    const destinations = [
-      NavigationDestination(icon: Icon(Icons.movie_outlined),
-          selectedIcon: Icon(Icons.movie), label: 'Movies'),
-      NavigationDestination(icon: Icon(Icons.confirmation_number_outlined),
-          selectedIcon: Icon(Icons.confirmation_number), label: 'Bookings'),
-      NavigationDestination(icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person), label: 'Profile'),
-    ];
+    final wide = MediaQuery.of(context).size.width >= 850;
+    final pages = [explorePage(), watchlistPage(), profilePage()];
     return Scaffold(
       appBar: AppBar(
         title: const Row(children: [
-          Icon(Icons.local_movies, color: Color(0xFF7054D8)),
+          Icon(Icons.movie_filter, color: Color(0xFFE50914)),
           SizedBox(width: 9),
-          Text('CineBook', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text('MovieExplorer', style: TextStyle(fontWeight: FontWeight.w800)),
         ]),
         actions: [
           IconButton(
-            tooltip: 'Toggle theme',
+            tooltip: widget.isDark ? 'Light theme' : 'Dark theme',
             onPressed: widget.onTheme,
-            icon: Icon(widget.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(widget.isDark ? Icons.light_mode : Icons.dark_mode),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Row(children: [
-        if (desktop)
+        if (wide)
           NavigationRail(
-            selectedIndex: page,
-            onDestinationSelected: (i) => setState(() => page = i),
+            selectedIndex: tab,
+            onDestinationSelected: (v) => setState(() => tab = v),
             labelType: NavigationRailLabelType.all,
             destinations: const [
-              NavigationRailDestination(icon: Icon(Icons.movie_outlined),
-                  selectedIcon: Icon(Icons.movie), label: Text('Movies')),
-              NavigationRailDestination(
-                  icon: Icon(Icons.confirmation_number_outlined),
-                  selectedIcon: Icon(Icons.confirmation_number),
-                  label: Text('Bookings')),
-              NavigationRailDestination(icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person), label: Text('Profile')),
+              NavigationRailDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: Text('Explore')),
+              NavigationRailDestination(icon: Icon(Icons.bookmark_border), selectedIcon: Icon(Icons.bookmark), label: Text('Watchlist')),
+              NavigationRailDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: Text('Profile')),
             ],
           ),
-        Expanded(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: KeyedSubtree(key: ValueKey(page), child: screens[page]),
-          ),
-        ),
+        Expanded(child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: KeyedSubtree(key: ValueKey(tab), child: pages[tab]),
+        )),
       ]),
-      bottomNavigationBar: desktop ? null : NavigationBar(
-        selectedIndex: page,
-        onDestinationSelected: (i) => setState(() => page = i),
-        destinations: destinations,
+      bottomNavigationBar: wide ? null : NavigationBar(
+        selectedIndex: tab,
+        onDestinationSelected: (v) => setState(() => tab = v),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.explore_outlined), label: 'Explore'),
+          NavigationDestination(icon: Icon(Icons.bookmark_border), label: 'Watchlist'),
+          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),
+        ],
       ),
     );
   }
 
-  void openMovie(Movie movie) {
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => MovieDetailsScreen(
-        movie: movie,
-        onConfirm: (booking) {
-          Navigator.pop(context);
-          confirm(booking);
-        },
-      ),
-    ));
-  }
-}
-
-// MOVIE LIST: search, genre filters, GridView, cards and reusable poster.
-class MoviesScreen extends StatefulWidget {
-  final ValueChanged<Movie> onSelect;
-  const MoviesScreen({super.key, required this.onSelect});
-  @override
-  State<MoviesScreen> createState() => _MoviesScreenState();
-}
-
-class _MoviesScreenState extends State<MoviesScreen> {
-  String search = '', genre = 'All';
-  final genres = const ['All', 'Action', 'Drama', 'Comedy', 'Adventure'];
-
-  @override
-  Widget build(BuildContext context) {
-    final results = movieList.where((m) =>
-        m.title.toLowerCase().contains(search.toLowerCase()) &&
-        (genre == 'All' || m.genre.toLowerCase().contains(genre.toLowerCase()))
-    ).toList();
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1150),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4934AA), Color(0xFF9B72E8)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Stack(children: [
-                const Positioned(right: 8, bottom: 0,
-                    child: Icon(Icons.movie_filter, size: 95,
-                        color: Colors.white24)),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Your next movie night starts here!',
-                      style: TextStyle(color: Colors.white, fontSize: 23,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text('Discover movies. Choose seats. Enjoy the show.',
-                      style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 15),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF4934AA)),
-                    onPressed: () => setState(() => genre = 'All'),
-                    child: const Text('Explore Movies'),
-                  ),
-                ]),
-              ]),
-            ),
+  Widget explorePage() => LayoutBuilder(builder: (context, box) {
+        final pad = box.maxWidth < 600 ? 16.0 : 28.0;
+        final items = filtered;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(pad, 18, pad, 28),
+          children: [
+            featuredBanner(),
             const SizedBox(height: 24),
-            const SectionHeading('Now Showing',
-                'Choose a movie and book your favourite seats.'),
-            const SizedBox(height: 14),
+            Text('Discover movies', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text('Find your next favourite story.', style: TextStyle(color: Theme.of(context).hintColor)),
+            const SizedBox(height: 16),
             TextField(
-              onChanged: (v) => setState(() => search = v),
+              onChanged: (v) => setState(() => query = v),
               decoration: InputDecoration(
-                hintText: 'Search movies...',
+                hintText: 'Search title, genre or language',
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: query.isEmpty ? null : IconButton(onPressed: () => setState(() => query = ''), icon: const Icon(Icons.close)),
                 filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
               ),
             ),
+            const SizedBox(height: 14),
+            SizedBox(height: 42, child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: genres.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) => ChoiceChip(
+                label: Text(genres[i]),
+                selected: genre == genres[i],
+                onSelected: (_) => setState(() => genre = genres[i]),
+              ),
+            )),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 42,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: genres.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (_, i) => ChoiceChip(
-                  label: Text(genres[i]),
-                  selected: genre == genres[i],
-                  onSelected: (_) => setState(() => genre = genres[i]),
-                ),
+            Row(children: [
+              Expanded(child: Text('${items.length} movies found', style: const TextStyle(fontWeight: FontWeight.bold))),
+              DropdownButton<String>(
+                value: sort,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: 'Recommended', child: Text('Recommended')),
+                  DropdownMenuItem(value: 'Top Rated', child: Text('Top Rated')),
+                  DropdownMenuItem(value: 'Newest', child: Text('Newest')),
+                  DropdownMenuItem(value: 'A–Z', child: Text('A–Z')),
+                ],
+                onChanged: (v) => setState(() => sort = v ?? 'Recommended'),
               ),
-            ),
-            const SizedBox(height: 18),
-            LayoutBuilder(builder: (context, constraints) {
-              final cols = constraints.maxWidth >= 950 ? 4 :
-                  constraints.maxWidth >= 650 ? 3 :
-                  constraints.maxWidth >= 410 ? 2 : 1;
-              if (results.isEmpty) {
-                return const Center(child: Padding(
-                  padding: EdgeInsets.all(30), child: Text('No movies found.')));
-              }
-              return GridView.builder(
+            ]),
+            const SizedBox(height: 10),
+            if (items.isEmpty)
+              const EmptyState(icon: Icons.movie_outlined, title: 'No movies found', message: 'Try another search or genre.')
+            else
+              GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: results.length,
+                itemCount: items.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols,
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
-                  childAspectRatio: cols == 1 ? 1.45 : 0.68,
+                  crossAxisCount: box.maxWidth >= 1050 ? 4 : box.maxWidth >= 650 ? 3 : 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: box.maxWidth < 400 ? .62 : .70,
                 ),
                 itemBuilder: (_, i) => MovieCard(
-                  movie: results[i], onTap: () => widget.onSelect(results[i])),
-              );
-            }),
+                  movie: items[i],
+                  saved: watchlist.contains(items[i].id),
+                  onTap: () => openMovie(items[i]),
+                  onSave: () => toggleSave(items[i]),
+                ),
+              ),
+          ],
+        );
+      });
+
+  Widget featuredBanner() {
+    final m = movieData.first;
+    return Container(
+      height: 205,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(colors: m.colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Stack(children: [
+        Positioned(right: -8, bottom: -24, child: Icon(m.icon, size: 190, color: Colors.white.withValues(alpha: .14))),
+        Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: .18), borderRadius: BorderRadius.circular(20)),
+              child: const Text("EDITOR'S PICK", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            ),
+            const SizedBox(height: 12),
+            const Text('Stories worth\\nstaying in for.', style: TextStyle(color: Colors.white, fontSize: 27, height: 1.05, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 12),
+            FilledButton.tonal(onPressed: () => openMovie(m), child: const Text('Explore featured movie')),
           ]),
         ),
-      ),
+      ]),
     );
   }
+
+  Widget watchlistPage() {
+    final saved = movieData.where((m) => watchlist.contains(m.id)).toList();
+    return Padding(
+      padding: const EdgeInsets.all(22),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('My Watchlist', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+        const SizedBox(height: 5),
+        Text('Movies you want to watch later.', style: TextStyle(color: Theme.of(context).hintColor)),
+        const SizedBox(height: 18),
+        Expanded(child: saved.isEmpty
+            ? const EmptyState(icon: Icons.bookmark_border, title: 'Your watchlist is empty', message: 'Save a movie from Explore to see it here.')
+            : GridView.builder(
+                itemCount: saved.length,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 230, mainAxisSpacing: 14, crossAxisSpacing: 14, childAspectRatio: .70),
+                itemBuilder: (_, i) => MovieCard(movie: saved[i], saved: true, onTap: () => openMovie(saved[i]), onSave: () => toggleSave(saved[i])),
+              )),
+      ]),
+    );
+  }
+
+  Widget profilePage() => ListView(padding: const EdgeInsets.all(24), children: [
+        Text('Profile & Settings', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+        const SizedBox(height: 22),
+        Card(child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(children: [
+            const CircleAvatar(radius: 30, child: Icon(Icons.person, size: 32)),
+            const SizedBox(width: 15),
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Movie Explorer User', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              SizedBox(height: 4), Text('Discover • Save • Explore'),
+            ])),
+            Chip(label: Text('${watchlist.length} saved')),
+          ]),
+        )),
+        Card(child: SwitchListTile(
+          secondary: const Icon(Icons.dark_mode_outlined),
+          title: const Text('Dark theme'),
+          subtitle: const Text('Change application appearance'),
+          value: widget.isDark,
+          onChanged: (_) => widget.onTheme(),
+        )),
+        const Card(child: ListTile(
+          leading: Icon(Icons.info_outline),
+          title: Text('About MovieExplorer'),
+          subtitle: Text('A Flutter movie discovery app built with Dart and Material Design.'),
+        )),
+        Card(child: ListTile(leading: const Icon(Icons.movie_outlined), title: const Text('Movies in catalogue'), trailing: Text('${movieData.length}'))),
+      ]);
 }
 
 class MovieCard extends StatelessWidget {
   final Movie movie;
-  final VoidCallback onTap;
-  const MovieCard({super.key, required this.movie, required this.onTap});
+  final bool saved;
+  final VoidCallback onTap, onSave;
+  const MovieCard({super.key, required this.movie, required this.saved, required this.onTap, required this.onSave});
+
   @override
   Widget build(BuildContext context) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onTap,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(flex: 6, child: Hero(
-          tag: movie.title, child: MoviePoster(movie: movie))),
-        Expanded(flex: 4, child: Padding(
-          padding: const EdgeInsets.all(11),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(movie.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            const SizedBox(height: 4),
-            Text(movie.genre, maxLines: 1,
-                style: Theme.of(context).textTheme.bodySmall),
-            const Spacer(),
-            Row(children: [
-              const Icon(Icons.star, color: Colors.amber, size: 17),
-              const SizedBox(width: 4),
-              Text(movie.rating),
-              const Spacer(),
-              Text(movie.duration,
-                  style: Theme.of(context).textTheme.bodySmall),
-            ]),
-            const SizedBox(height: 6),
-            SizedBox(width: double.infinity,
-              child: FilledButton(onPressed: onTap,
-                  child: const Text('Book Tickets'))),
+            Expanded(child: Hero(tag: 'movie-${movie.id}', child: MovieArtwork(movie: movie))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 7, 8),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Expanded(child: Text(movie.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+                    onPressed: onSave,
+                    icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border, color: saved ? const Color(0xFFE50914) : null, size: 20),
+                  ),
+                ]),
+                Text('${movie.year} • ${movie.genre}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).hintColor, fontSize: 11)),
+                const SizedBox(height: 5),
+                Row(children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 15),
+                  const SizedBox(width: 3),
+                  Text(movie.rating.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const Spacer(),
+                  Text('${movie.minutes} min', style: TextStyle(color: Theme.of(context).hintColor, fontSize: 10)),
+                ]),
+              ]),
+            ),
           ]),
-        )),
-      ]),
-    ),
-  );
+        ),
+      );
 }
 
-class MoviePoster extends StatelessWidget {
+class MovieArtwork extends StatelessWidget {
   final Movie movie;
-  const MoviePoster({super.key, required this.movie});
+  const MovieArtwork({super.key, required this.movie});
   @override
   Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [movie.color, movie.color.withValues(alpha: 0.65)],
-        begin: Alignment.topLeft, end: Alignment.bottomRight),
-    ),
-    child: Stack(alignment: Alignment.center, children: [
-      Positioned(top: 10, right: 10,
-        child: Chip(label: Text('★ ${movie.rating}',
-            style: const TextStyle(color: Colors.white)),
-          backgroundColor: Colors.black38)),
-      Icon(movie.icon, size: 75, color: Colors.white.withValues(alpha: 0.9)),
-      Positioned(bottom: 12, left: 8, right: 8,
-        child: Text(movie.title.toUpperCase(), textAlign: TextAlign.center,
-          maxLines: 2, style: const TextStyle(color: Colors.white,
-            fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1))),
-    ]),
-  );
+        width: double.infinity,
+        decoration: BoxDecoration(gradient: LinearGradient(colors: movie.colors, begin: Alignment.topLeft, end: Alignment.bottomRight)),
+        child: Stack(children: [
+          Positioned(top: 12, left: 12, child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(color: Colors.black.withValues(alpha: .35), borderRadius: BorderRadius.circular(20)),
+            child: Text(movie.age, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+          )),
+          Center(child: Icon(movie.icon, size: 76, color: Colors.white.withValues(alpha: .88))),
+          Positioned(bottom: 10, left: 10, right: 10, child: Text(
+            movie.title.toUpperCase(), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.1, fontWeight: FontWeight.w900, shadows: [Shadow(blurRadius: 8, color: Colors.black54)]),
+          )),
+        ]),
+      );
 }
 
-// DETAILS + SHOW TIME + SEAT SELECTION + VALIDATED CUSTOMER FORM.
-class MovieDetailsScreen extends StatefulWidget {
+class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
-  final ValueChanged<TicketBooking> onConfirm;
-  const MovieDetailsScreen({super.key, required this.movie, required this.onConfirm});
+  final bool saved;
+  final VoidCallback onSave;
+  const MovieDetailsPage({super.key, required this.movie, required this.saved, required this.onSave});
   @override
-  State<MovieDetailsScreen> createState() => _MovieDetailsScreenState();
+  State<MovieDetailsPage> createState() => _MovieDetailsPageState();
 }
 
-class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
-  final selectedSeats = <String>{};
-  String showTime = '06:30 PM';
-  final times = const ['10:00 AM', '01:30 PM', '06:30 PM', '09:45 PM'];
-  final rows = const ['A', 'B', 'C', 'D', 'E'];
-  bool booked(String seat) => ['A3', 'A4', 'B6', 'C2', 'D8'].contains(seat);
+class _MovieDetailsPageState extends State<MovieDetailsPage> {
+  late bool saved;
+  @override
+  void initState() { super.initState(); saved = widget.saved; }
+  void toggle() { widget.onSave(); setState(() => saved = !saved); }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Movie Details')),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(18),
-      child: Center(child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 850),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(height: 205, width: double.infinity,
-            child: Hero(tag: widget.movie.title,
-              child: ClipRRect(borderRadius: BorderRadius.circular(18),
-                child: MoviePoster(movie: widget.movie))),
-          ),
-          const SizedBox(height: 16),
-          Text(widget.movie.title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Wrap(spacing: 8, runSpacing: 5, children: [
-            InfoChip(Icons.category, widget.movie.genre),
-            InfoChip(Icons.schedule, widget.movie.duration),
-            InfoChip(Icons.language, widget.movie.language),
-            InfoChip(Icons.star, widget.movie.rating),
-          ]),
-          const SizedBox(height: 12),
-          Text(widget.movie.description),
-          const SizedBox(height: 22),
-          const SectionHeading('Select Show Time', 'Choose a convenient show.'),
-          const SizedBox(height: 12),
-          Wrap(spacing: 8, children: times.map((t) => ChoiceChip(
-            label: Text(t), selected: showTime == t,
-            onSelected: (_) => setState(() => showTime = t),
-          )).toList()),
-          const SizedBox(height: 24),
-          const SectionHeading('Select Your Seats',
-              'Tap available seats to select or deselect.'),
-          const SizedBox(height: 14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(16)),
-            child: Column(children: [
-              Container(width: 230, height: 7,
-                decoration: BoxDecoration(color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(20))),
-              const SizedBox(height: 7),
-              const Text('SCREEN', style: TextStyle(letterSpacing: 3,
-                  fontWeight: FontWeight.bold, fontSize: 11)),
-              const SizedBox(height: 18),
-              ...rows.map((row) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  SizedBox(width: 20, child: Text(row)),
-                  ...List.generate(8, (i) {
-                    final seat = '$row${i + 1}';
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: SeatButton(
-                        seat: seat, isBooked: booked(seat),
-                        isSelected: selectedSeats.contains(seat),
-                        onTap: () => setState(() {
-                          if (selectedSeats.contains(seat)) {
-                            selectedSeats.remove(seat);
-                          } else {
-                            selectedSeats.add(seat);
-                          }
-                        }),
-                      ),
-                    );
-                  }),
-                ]),
-              )),
-              const SizedBox(height: 12),
-              const Wrap(alignment: WrapAlignment.center, spacing: 15, children: [
-                SeatLegend(color: Color(0xFFB9B9C5), label: 'Available'),
-                SeatLegend(color: Color(0xFF7657E8), label: 'Selected'),
-                SeatLegend(color: Color(0xFFE36A6A), label: 'Booked'),
-              ]),
-            ]),
-          ),
-          const SizedBox(height: 18),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(15)),
-            child: Row(children: [
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${selectedSeats.length} seat(s) selected'),
-                  Text('₹${selectedSeats.length * 180}',
-                    style: const TextStyle(fontSize: 22,
-                        fontWeight: FontWeight.bold)),
-                ])),
-              FilledButton.icon(
-                onPressed: selectedSeats.isEmpty ? null : customerForm,
-                icon: const Icon(Icons.confirmation_number),
-                label: const Text('Continue'),
-              ),
-            ]),
-          ),
-        ]),
-      )),
-    ),
-  );
-
-  void customerForm() {
-    final key = GlobalKey<FormState>();
-    final name = TextEditingController();
-    final phone = TextEditingController();
-    showDialog(context: context, builder: (dialogContext) => AlertDialog(
-      title: const Text('Booking Details'),
-      content: Form(key: key, child: Column(mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(controller: name,
-            decoration: const InputDecoration(labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person)),
-            validator: (v) {
-              if (v == null || v.trim().length < 3) return 'Enter your full name';
-              return null;
-            }),
-          const SizedBox(height: 12),
-          TextFormField(controller: phone, maxLength: 10,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(labelText: '10-digit Mobile Number',
-                prefixIcon: Icon(Icons.phone)),
-            validator: (v) {
-              if (v == null || !RegExp(r'^[0-9]{10}$').hasMatch(v)) {
-                return 'Enter a valid 10-digit number';
-              }
-              return null;
-            }),
-        ])),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel')),
-        FilledButton(onPressed: () {
-          if (key.currentState!.validate()) {
-            final booking = TicketBooking(widget.movie, showTime,
-                name.text.trim(), phone.text.trim(),
-                selectedSeats.toList()..sort());
-            Navigator.pop(dialogContext);
-            widget.onConfirm(booking);
-          }
-        }, child: const Text('Confirm Booking')),
-      ],
-    ));
-  }
-}
-
-class SeatButton extends StatelessWidget {
-  final String seat;
-  final bool isBooked, isSelected;
-  final VoidCallback onTap;
-  const SeatButton({super.key, required this.seat, required this.isBooked,
-      required this.isSelected, required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    final color = isBooked ? const Color(0xFFE36A6A) :
-        isSelected ? const Color(0xFF7657E8) : const Color(0xFFB9B9C5);
-    return Tooltip(message: '$seat',
-      child: InkWell(
-        onTap: isBooked ? null : onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          width: 27, height: 27, alignment: Alignment.center,
-          decoration: BoxDecoration(color: color,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: isSelected ? Colors.white : Colors.transparent)),
-          child: Text(seat.substring(1), style: const TextStyle(
-              color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+        appBar: AppBar(
+          title: const Text('Movie details'),
+          actions: [IconButton(onPressed: toggle, tooltip: 'Toggle watchlist', icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border))],
         ),
-      ),
-    );
-  }
-}
-
-class SeatLegend extends StatelessWidget {
-  final Color color;
-  final String label;
-  const SeatLegend({super.key, required this.color, required this.label});
-  @override
-  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(width: 12, height: 12,
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
-      const SizedBox(width: 5),
-      Text(label, style: const TextStyle(fontSize: 11)),
-    ]);
-}
-
-// BOOKINGS SCREEN: ListView and ticket summary cards.
-class BookingsScreen extends StatelessWidget {
-  final List<TicketBooking> bookings;
-  const BookingsScreen({super.key, required this.bookings});
-  @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    padding: const EdgeInsets.all(20),
-    child: Center(child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SectionHeading('My Bookings', 'Your confirmed tickets appear here.'),
-        const SizedBox(height: 18),
-        if (bookings.isEmpty)
-          Center(child: Padding(padding: const EdgeInsets.all(35),
-            child: Column(children: [
-              Icon(Icons.confirmation_number_outlined, size: 75,
-                  color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 12),
-              const Text('No bookings yet',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
-              const Text('Book a movie to see your ticket here.'),
-            ])))
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: bookings.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) => BookingCard(booking: bookings[i]),
-          ),
-      ]),
-    )),
-  );
-}
-
-class BookingCard extends StatelessWidget {
-  final TicketBooking booking;
-  const BookingCard({super.key, required this.booking});
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Row(children: [
-      Container(width: 8, height: 155, color: booking.movie.color),
-      Expanded(child: Padding(padding: const EdgeInsets.all(15),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: Text(booking.movie.title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold))),
-            const Icon(Icons.verified, color: Colors.green),
-          ]),
-          const SizedBox(height: 8),
-          Text('Name: ${booking.name}'),
-          Text('Show: ${booking.time}'),
-          Text('Seats: ${booking.seats.join(", ")}'),
-          const Divider(height: 18),
-          Row(children: [
-            const Text('Total Amount'), const Spacer(),
-            Text('₹${booking.total}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          ]),
-        ]),
-      )),
-    ]),
-  );
-}
-
-// PROFILE + THEME SETTINGS.
-class ProfileScreen extends StatelessWidget {
-  final bool dark;
-  final VoidCallback onTheme;
-  final int count;
-  const ProfileScreen({super.key, required this.dark,
-      required this.onTheme, required this.count});
-  @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    padding: const EdgeInsets.all(20),
-    child: Center(child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 750),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SectionHeading('Profile & Settings',
-            'Manage your CineBook application preferences.'),
-        const SizedBox(height: 18),
-        Card(child: const ListTile(
-          leading: CircleAvatar(child: Icon(Icons.person)),
-          title: Text('CineBook User',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text('Movie lover'),
-        )),
-        Card(child: SwitchListTile(
-          secondary: Icon(dark ? Icons.dark_mode : Icons.light_mode),
-          title: const Text('Dark Theme'),
-          subtitle: const Text('Change application appearance'),
-          value: dark, onChanged: (_) => onTheme(),
-        )),
-        Card(child: ListTile(
-          leading: const Icon(Icons.confirmation_number),
-          title: const Text('Total Bookings'),
-          trailing: Text('$count'),
-        )),
-        const Card(child: ListTile(
-          leading: Icon(Icons.info_outline),
-          title: Text('About CineBook'),
-          subtitle: Text('A sample Flutter movie ticket booking application.'),
-        )),
-        const Card(child: ListTile(
-          leading: Icon(Icons.code),
-          title: Text('Built with Flutter'),
-          subtitle: Text('Dart • Material Design • StatefulWidget'),
-        )),
-      ]),
-    )),
-  );
-}
-
-// REUSABLE UI COMPONENTS.
-class SectionHeading extends StatelessWidget {
-  final String title, subtitle;
-  const SectionHeading(this.title, this.subtitle, {super.key});
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.bold)),
-      const SizedBox(height: 5),
-      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant)),
-    ],
-  );
-}
-
-class InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const InfoChip(this.icon, this.label, {super.key});
-  @override
-  Widget build(BuildContext context) => Chip(
-    avatar: Icon(icon, size: 16),
-    label: Text(label),
-    visualDensity: VisualDensity.compact,
-  );
-}
+        body: LayoutBuilder(builder: (context, box) {
+          final wide = box.maxWidth > 700;
+          final poster = SizedBox(
+            width: wide ? 280 : double.infinity,
+            height: wide ? 390 : 300,
+            child: He
